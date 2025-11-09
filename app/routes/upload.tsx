@@ -9,6 +9,18 @@ import {AIResponseFormat, prepareInstructions} from "../../constants";
 
 const Upload = () => {
     const { auth, isLoading, fs, ai, kv } = usePuterStore();
+    // Temporary KV test to check if Puter KV works
+    (async () => {
+    try {
+        await kv.set("test:key", "hello world");
+        const value = await kv.get("test:key");
+        console.log("KV test value:", value);
+    } catch (err) {
+        console.error("KV test failed:", err);
+    }
+    })();
+
+    
     const navigate = useNavigate();
     const [isProcessing, setIsProcessing] = useState(false);
     const [statusText, setStatusText] = useState('');
@@ -23,10 +35,12 @@ const Upload = () => {
 
         setStatusText('Uploading the file...');
         const uploadedFile = await fs.upload([file]);
+        console.log("Uploaded file:", uploadedFile);
         if(!uploadedFile) return setStatusText('Error: Failed to upload file');
 
         setStatusText('Converting to image...');
         const imageFile = await convertPdfToImage(file);
+        console.log("Image converted:", imageFile);
         if(!imageFile.file) return setStatusText('Error: Failed to convert PDF to image');
 
         setStatusText('Uploading the image...');
@@ -60,7 +74,8 @@ const Upload = () => {
         await kv.set(`resume:${uuid}`, JSON.stringify(data));
         setStatusText('Analysis complete, redirecting...');
         console.log(data);
-        // navigate(`/resume/${uuid}`);
+        console.log("AI feedback raw:", data);
+        navigate(`/resume/${uuid}`);
     }
 
     const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
